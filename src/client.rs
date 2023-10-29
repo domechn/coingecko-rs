@@ -66,7 +66,11 @@ impl CoinGeckoClient {
     }
 
     async fn get<R: DeserializeOwned>(&self, endpoint: &str) -> Result<R, Error> {
-        reqwest::get(format!("{host}/{ep}", host = self.host, ep = endpoint))
+        // use curl as UA to avoid 403
+        let client = reqwest::Client::builder().user_agent("curl/7.68.0").build()?;
+        client
+            .get(format!("{host}/{ep}", host = self.host, ep = endpoint))
+            .send()
             .await?
             .json()
             .await
